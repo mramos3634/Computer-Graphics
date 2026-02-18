@@ -1,0 +1,131 @@
+<HTML lang="en">
+	<HEAD>
+		<META CHARSET="UTF-8">
+		<TITLE>SLOT MACHINE</TITLE>
+		<SCRIPT>
+			//main class 
+			class main{
+				constructor(){
+					//class variables
+					this.money = 100;
+					this.slots = [];
+					
+					//creating a section tag dynamically
+					this.outputSection = document.createElement("section");
+					document.body.appendChild(this.outputSection);
+					
+					//create 3 slot machines (phase 2)
+					for (var i = 0; i < 3; i++){
+						this.slots.push(new SlotMachine(document.body));
+					}
+					
+					this.updateOutput("Game Ready");
+				}
+				
+				playAll(){
+					
+					if (this.money <= 0){
+						this.updateOutput("Game Over!");
+						return;
+					}
+					
+					this.money -= 1;
+					var totalWon = 0;
+					
+					for (var i = 0; i < this.slots.length; i++){
+						this.slots[i].play();
+						totalWon += this.slots[i].lastAmountWon;
+					}
+					
+					if (totalWon > 0) {
+						this.money += totalWon;
+						this.updateOutput("Winner! You earned " + totalWon + "<br>Current Money: " + this.money);
+					}
+					else {
+						this.updateOutput("Game Over!<br>Current Money: " + this.money);
+					}
+				}
+				
+				updateOutput(message){
+					this.outputSection.innerHTML = message;
+				}
+			}
+			
+			//slot machine class
+			class SlotMachine {
+				constructor(parentElement){
+					this.lastAmountWon = 0;
+					this.numbers = [];
+					this.images = [];
+					
+					//create 3 images dynamically
+				
+					for (var i = 0; i < 3; i++){
+						var img = document.createElement("img");
+						img.width = 64;
+						img.height = 64;
+						img.alt = "-";
+						parentElement.appendChild(img);
+						this.images.push(img);
+					}
+				
+					parentElement.appendChild(document.createElement("br"));
+				}
+				
+				play() {
+					this.numbers = [];
+					this.lastAmountWon = 0;
+					
+					//generate nums and imgs
+					for (var i = 0; i < 3; i++){
+						var num = Math.floor(Math.random() * 7);
+						this.numbers.push(num);
+						this.images[i].src = "slot" + num + ".png";
+						this.images[i].alt = num;
+					}
+					
+					//reward logic
+					var a = this.numbers[0];
+					var b = this.numbers[1];
+					var c = this.numbers[2];
+					
+					if (a === 0 && b === 0 && c === 0){
+						this.lastAmountWon = 14;
+					}
+					else if (a === b && b === c && a !== 0){
+						this.lastAmountWon = 7;
+					}
+					else if (a === 0 && b === 0 && c !== 0) {
+						this.lastAmountWon = 3;
+					}
+					else if (a === b && a !== 0) {
+						this.lastAmountWon = 2;
+					}
+					else if (a === 0){
+						this.lastAmountWon = 1;
+					}
+					else {
+						this.lastAmountWon = 0;
+					}
+				}
+			}
+		
+		//only global variable
+		var mainInstance;
+
+        function playButton() {
+            mainInstance.playAll();
+        }
+
+        window.onload = function () {
+            mainInstance = new main();
+        };
+    </script>
+</head>
+
+<body>
+    <button onclick="playButton()">Play</button>
+</body>
+</html>
+
+

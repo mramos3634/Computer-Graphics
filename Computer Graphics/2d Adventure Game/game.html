@@ -1,0 +1,356 @@
+<HTML lang="en">
+	<HEAD>
+		<META CHARSET="UTF-8">
+		<TITLE>2D ADVENTURE GAME</TITLE>
+		<SCRIPT>
+			class Player {
+				constructor(x, y) {
+					this.x = x;
+					this.y = y;
+					
+					this.hp = 30;
+					this.mhp = 30;
+					this.atk = 6;
+					this.def = 2;
+					
+					this.pic = new Image();
+					this.pic.src = "hero.png";
+					
+				}
+				
+				draw() {
+					//draw player Image
+					ctx.drawImage(this.pic, this.x * 64, this.y * 64, 64, 64);
+					//health bar
+					ctx.fillStyle = "red";
+					ctx.fillRect(
+						this.x * 64,
+						this.y * 64 + 58,
+						64 * (this.hp / this.mhp),
+						6
+					);
+				}
+				
+				attack(monster) {
+					var baseDamage = monster.atk - this.def;
+					
+					if(baseDamage < 1){
+						baseDamage = 1;
+					}
+					
+					var roll = Math.floor(Math.random() * 6) + 1;
+					var damage = baseDamage * roll;
+					
+					monster.hp -= damage;
+				}
+			}
+			
+			class Monster {
+				constructor(x, y, hp, atk, def, imgSrc) {
+					this.x = x;
+					this.y = y;
+
+					this.hp = hp;
+					this.mhp = hp;
+					this.atk = atk;
+					this.def = def;
+
+					this.pic = new Image();
+					this.pic.src = imgSrc;
+				}
+				
+				draw() {
+					ctx.drawImage(this.pic, this.x * 64, this.y * 64, 64, 64);
+
+					// health bar
+					ctx.fillStyle = "red";
+					ctx.fillRect(
+						this.x * 64,
+						this.y * 64 + 58,
+						64 * (this.hp / this.mhp),
+						6
+					);
+				}
+				
+				attack(player) {
+					var baseDamage = this.atk - player.def;
+					
+					if(baseDamage < 1){
+						baseDamage = 1;
+					}
+					
+					var roll = Math.floor(Math.random() * 6) + 1;
+					var damage = baseDamage * roll;
+					
+					player.hp -= damage;
+				}
+			}
+		
+			
+			//main class
+			class Main{
+				constructor(){
+					canvas = document.getElementById("gameCanvas");
+					ctx = canvas.getContext("2d");
+					
+					this.tileSize = 64;
+					
+					// 0 = empty, 1 = wall, 2 = tree
+					this.map = [
+						[1,1,1,1,1,1,1,1,1,1],
+						[1,0,0,0,0,0,0,0,0,1],
+						[1,0,2,0,2,0,0,0,0,1],
+						[1,0,0,0,0,0,2,2,0,1],
+						[1,0,2,0,0,0,2,0,0,1],
+						[1,0,0,2,0,0,0,0,0,1],
+						[1,0,0,0,0,0,0,0,0,1],
+						[1,0,0,0,2,0,0,2,0,1],
+						[1,0,0,2,0,0,0,0,0,1],
+						[1,1,1,1,1,1,1,1,1,1]
+					];
+					
+					this.player = new Player(1, 1);
+					this.monsters = [];
+					
+					this.monsters.push(new Monster(4, 4, 10, 4, 1, "monster1.png"));
+					this.monsters.push(new Monster(7, 6, 16, 6, 2, "monster2.png"));
+					this.monsters.push(new Monster(2, 7, 20, 8, 3, "monster3.png"));
+					
+					this.potions = [];
+					
+					this.potions.push({x: 3, y: 3});
+					this.potions.push({x: 6, y: 7});
+					
+					this.draw();
+				}
+				
+				draw(){
+					ctx.clearRect(0,0,canvas.width,canvas.height);
+					
+					for (var y = 0; y < this.map.length; y++){
+						for (var x = 0; x < this.map[y].length; x++){
+							
+							var px = x * 64;
+							var py = y * 64;
+							
+							//Empty Tile (Path)
+							ctx.fillStyle = "#808080";
+							ctx.fillRect(px, py, 64, 64);
+							
+							//Wall (brick wall)
+							if (this.map[y][x] === 1){
+								//base brick color
+								ctx.fillStyle = "#8b0000";
+								ctx.fillRect(px, py, 64, 64);
+								
+								//brick lines
+								ctx.strokeStyle = "black";
+								ctx.lineWidth = 2;
+								
+								// Horizontal lines
+								ctx.beginPath();
+								ctx.moveTo(px, py + 32);
+								ctx.lineTo(px + 64, py + 32);
+								ctx.stroke();
+
+								// Vertical offset lines
+								ctx.beginPath();
+								ctx.moveTo(px + 32, py);
+								ctx.lineTo(px + 32, py + 32);
+								ctx.stroke();
+
+								ctx.beginPath();
+								ctx.moveTo(px + 16, py + 32);
+								ctx.lineTo(px + 16, py + 64);
+								ctx.stroke();
+
+								ctx.beginPath();
+								ctx.moveTo(px + 48, py + 32);
+								ctx.lineTo(px + 48, py + 64);
+								ctx.stroke();
+							}
+							
+							//Tree (Circle)
+							else if (this.map[y][x] === 2){
+								var px = x * 64;
+								var py = y * 64;
+
+								// trunk
+								ctx.fillStyle = "#8B5A2B";
+								ctx.fillRect(px + 26, py + 28, 12, 28);
+
+								// leaves
+								ctx.fillStyle = "green";
+
+								ctx.beginPath();
+								ctx.arc(px + 20, py + 28, 16, 0, Math.PI * 2);
+								ctx.fill();
+
+								ctx.beginPath();
+								ctx.arc(px + 44, py + 28, 16, 0, Math.PI * 2);
+								ctx.fill();
+
+								ctx.beginPath();
+								ctx.arc(px + 32, py + 16, 18, 0, Math.PI * 2);
+								ctx.fill();
+							}
+						}
+					}
+					
+					//draw potions
+					for(var i = 0; i < this.potions.length; i++){
+						var p = this.potions[i];
+						
+						ctx.fillStyle = "blue"
+						ctx.beginPath();
+						ctx.arc(p.x * 64 + 32, p.y * 64 + 32, 12, 0, Math.PI * 2);
+						ctx.fill();
+					}
+					
+					this.player.draw();
+					
+					for (var i = 0; i < this.monsters.length; i++) {
+						this.monsters[i].draw();
+					}
+				}
+				
+				moveMonsters(){
+					for (var i = 0; i < this.monsters.length; i++){
+						var m = this.monsters[i];
+						
+						var dx = 0;
+						var dy = 0;
+						
+						//random movement
+						var dir = Math.floor(Math.random() * 4);
+						if (dir === 0) dy = -1;
+						if (dir === 1) dy = 1;
+						if (dir === 2) dx = -1;
+						if (dir === 3) dx = 1;
+						
+						var newX = m.x + dx;
+						var newY = m.y + dy;
+						
+						//monster attack Player
+						if(newX === this.player.x && newY === this.player.y){
+							m.attack(this.player);
+							continue;
+						}
+						
+						//player death condition
+						if (this.player.hp <= 0){
+							ctx.fillStyle = "black";
+							ctx.font = "32px Arial";
+							ctx.fillText("Game Over", 200, 320);
+						}
+						
+						//block walls and trees
+						if(this.map[newY][newX] !== 0){
+							continue;
+						}
+						
+						m.x = newX;
+						m.y = newY;
+					}
+				}
+			}
+							
+		function movePlayer(dx, dy){
+			var newX = mainInstance.player.x + dx;
+			var newY = mainInstance.player.y + dy;
+			
+			//monster collision
+			for (var i = 0; i < mainInstance.monsters.length; i++){
+				var m = mainInstance.monsters[i];
+				
+				if(m.x === newX && m.y === newY && m.hp > 0){
+					//player attack first
+					mainInstance.player.attack(m);
+					
+					//monster attack back if alive
+					if (m.hp > 0){
+						m.attack(mainInstance.player);
+					}
+					else{
+						//monster is removed if dead
+						mainInstance.monsters.splice(i, 1);
+					}
+					
+					mainInstance.draw();
+					return;
+				}
+			}
+			
+			
+			// block walls and tree
+			if (mainInstance.map[newY][newX] !== 0){
+				return;
+			}
+			
+			mainInstance.player.x = newX;
+			mainInstance.player.y = newY;
+			
+			//check potion pickup
+			for(var i = 0; i < mainInstance.potions.length; i++){
+				var p = mainInstance.potions[i];
+				
+				if (p.x === mainInstance.player.x && p.y === mainInstance.player.y) {
+					mainInstance.player.hp += 10;
+
+					if (mainInstance.player.hp > mainInstance.player.mhp) {
+						mainInstance.player.hp = mainInstance.player.mhp;
+					}
+
+					// remove potion
+					mainInstance.potions.splice(i, 1);
+					break;
+				}
+			}
+			
+			//after player moves, monster moves
+			mainInstance.moveMonsters();
+			
+			mainInstance.draw();
+			
+			//lose condition
+			if(mainInstance.player.hp <= 0){
+				ctx.fillStyle = "black";
+				ctx.font = "32px Arial";
+				ctx.fillText("Game Over", 200, 320);
+			}
+			
+			//win condition
+			if (mainInstance.monsters.length === 0){
+				ctx.fillStyle = "black";
+				ctx.font = "32px Arial";
+				ctx.fillText("You Win!", 200, 320);
+			}
+			
+		}
+		
+		var mainInstance;
+		var canvas;
+		var ctx;
+		
+		
+		// Start game
+		window.onload = function () {
+			mainInstance = new Main();
+		};
+	</SCRIPT>
+</HEAD>
+<BODY>
+	
+	<canvas id="gameCanvas" width="640" height="640"></canvas>
+	
+	<br>
+	
+	<button onclick="movePlayer(0,-1)">Up</button>
+	<button onclick="movePlayer(0,1)">Down</button>
+	<button onclick="movePlayer(-1,0)">Left</button>
+	<button onclick="movePlayer(1,0)">Right</button>
+	
+	<script src="game.js"></script>
+</BODY>
+</HTML>
+	

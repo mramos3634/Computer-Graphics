@@ -1,0 +1,72 @@
+<HTML lang="en">
+	<HEAD>
+		<META CHARSET="UTF-8">
+		<TITLE>LUCKY NUMBER GAME</TITLE>
+		<SCRIPT>
+			//main class
+			class Main {
+				constructor() {
+					this.wins = 0;
+					this.losses = 0;
+					
+					//store html elements
+					this.imgElement = document.getElementById("image");
+					this.outputElement = document.getElementById("output");
+				}
+				
+				playGame() {
+					var num1 = Math.floor(Math.random() * 100) + 1;
+					var num2 = Math.floor(Math.random() * 100) + 1;
+					
+					this.outputElement.innerHTML = "Number 1: " + num1 + "<br>" + "Number 2: " + num2 + "<br>";
+					
+					if (num2 > num1) {
+						this.outputElement.innerHTML += "You Win!";
+						this.wins++;
+					}
+					else {
+						this.outputElement.innerHTML += "You Lose!";
+						this.losses++;
+					}
+					this.outputElement.innerHTML += "<br><br>Wins: " + this.wins + " | Losses: " + this.losses;
+					
+					this.updateImage();
+				}
+				
+				updateImage() {
+					if (this.wins > this.losses) {
+						this.imgElement.src = "happy.png";
+					}
+					else{
+						this.imgElement.src = "sad.png";
+					}
+				}
+			}
+			
+			var mainInstance;
+			
+			function playGameButton() {
+				mainInstance.playGame();
+			}
+			
+			window.onload = function() {
+				mainInstance = new Main();
+			};
+		</SCRIPT>
+	</HEAD>
+	
+	<BODY>
+	
+		<h1> LUCKY NUMBER GAME </h1>
+		
+		<button onclick="playGameButton()">Play Game</button>
+		
+		<div id="output"></div>
+		
+		<br>
+
+		<img id="image" src="neutral.png" width="200">
+		
+</body>
+</html>
+						
